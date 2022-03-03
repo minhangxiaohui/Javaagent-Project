@@ -1,37 +1,38 @@
 package priv.agentmaininjectdemo;
 
-import java.io.*;
+import javassist.ClassClassPath;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtMethod;
+
 import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 
 public class PeoplesTransformer implements ClassFileTransformer {
     @Override
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) {
         if(!className.startsWith("priv/agentmaininjectdemo/Peoples"))
         {
             return  classfileBuffer;
         }
-        System.out.println(className);
-        String filename = "D:\\githubprogram\\Testforjavaagent\\Peoples2.class";
 
-        try {
-            File file =new File(filename);
-            InputStream fis = new FileInputStream(file);
-            long length = file.length();
-            byte[] bytess = new byte[(int)length];
-
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            int b ;
-            while ((b=fis.read(bytess))!=-1){
-                bos.write(bytess,0,b);
-            }
-            return bytess;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return  null;
+        try{
+        ClassPool cp = ClassPool.getDefault();
+        ClassClassPath classPath = new ClassClassPath(classBeingRedefined);  //get current class's classpath
+        cp.insertClassPath(classPath);  //add the classpath to classpool
+        CtClass cc = cp.get("priv.agentmaininjectdemo.Peoples");
+        CtMethod m = cc.getDeclaredMethod("say");
+            System.out.println("changing class method to add some code ........");
+        m.addLocalVariable("elapsedTime", CtClass.longType);
+        m.insertBefore("System.out.println(\"injected by agent\");");
+        byte[] byteCode = cc.toBytecode();
+        cc.detach();
+        return byteCode;
         }
-
-
+        catch (Exception e){
+            e.printStackTrace();
+            System.out.println("warning");
+            return null;
+        }
     }
 }

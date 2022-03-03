@@ -1,23 +1,18 @@
-package priv.agentmaininjectdemo;
+package priv.findmemshell;
 
 import com.sun.tools.attach.VirtualMachine;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Scanner;
 
-public class Attachthings {
+public class Findattach {
     public static void main(String[] args) throws Exception{
-
-//        System.out.println(getjarpid());
-        //agentfordemo-1.0-SNAPSHOT.jar
         String pid = getjarpid().trim();
-//        System.out.println(pid);
+        System.out.println(pid);
         VirtualMachine vm = VirtualMachine.attach(pid);
-        vm.loadAgent("D:\\githubprogram\\Testforjavaagent\\agentfordemo-2.0-SNAPSHOT-jar-with-dependencies.jar");
+        vm.loadAgent("D:\\githubprogram\\Testforjavaagent\\Findagent-2.0-SNAPSHOT.jar");
     }
-
     private static String getjarpid() throws Exception{
         Process ps = Runtime.getRuntime().exec("jps");
         InputStream is = ps.getInputStream();
@@ -31,9 +26,10 @@ public class Attachthings {
         }
         String  [] xx= sb.toString().split(";");
         for (String x : xx){
-            if (x.contains("jar"))
+            String name = "Bootstrap";
+            if (x.contains(name))
             {
-                result=x.substring(0,x.length()-3);
+                result=x.substring(0,x.length()-name.length());
             }
         }
         return result;
